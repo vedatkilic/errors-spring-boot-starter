@@ -1,0 +1,9 @@
+{
+  "properties": [
+    {
+      "name": "errors.enabled",
+      "type": "java.lang.Boolean",
+      "description": "Enables or disables the Error Handling completely."
+    }
+  ]
+}
