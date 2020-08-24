@@ -16,8 +16,8 @@ deploy:
   image: maven:3.6.1-jdk-11-slim
   stage: deploy
   variables:
-    MAVEN_OPTS: ""
+    MAVEN_OPTS: "-B -s .m2/settings.xml"
   script:
-    - mvn -B -s $MAVEN_OPTS deploy
+    - mvn $MAVEN_OPTS deploy
   tags:
     - ozan
