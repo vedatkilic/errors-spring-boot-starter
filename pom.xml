@@ -89,31 +89,11 @@
 		</repository>
 	</distributionManagement>
 
-
 	<build>
 		<plugins>
 			<plugin>
 				<groupId>org.springframework.boot</groupId>
 				<artifactId>spring-boot-maven-plugin</artifactId>
-			</plugin>
-			<plugin>
-				<groupId>org.sonatype.plugins</groupId>
-				<artifactId>nexus-staging-maven-plugin</artifactId>
-				<version>1.5.1</version>
-				<executions>
-					<execution>
-						<id>default-deploy</id>
-						<phase>deploy</phase>
-						<goals>
-							<goal>deploy</goal>
-						</goals>
-					</execution>
-				</executions>
-				<configuration>
-					<serverId>friends-snapshots</serverId>
-					<nexusUrl>https://nexus.codespacedev.com/repository/friends-snapshots/</nexusUrl>
-					<skipStaging>true</skipStaging>
-				</configuration>
 			</plugin>
 		</plugins>
 	</build>
