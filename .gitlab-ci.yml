@@ -14,7 +14,7 @@ build:
 
 deploy:
   image: maven:3.6.1-jdk-11-slim
-  stage: build
+  stage: deploy
   variables:
     MAVEN_OPTS: ""
   script:
