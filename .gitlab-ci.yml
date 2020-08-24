@@ -19,3 +19,5 @@ deploy:
     - mvn -B -s .m2/settings.xml --batch-mode deploy
   tags:
     - ozan
+  only:
+  - master
