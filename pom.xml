@@ -84,6 +84,17 @@
 		</dependency>
 	</dependencies>
 
+	<distributionManagement>
+		<snapshotRepository>
+			<id>friends-snapshots</id>
+			<url>https://nexus.codespacedev.com/repository/friends-snapshots/</url>
+		</snapshotRepository>
+		<repository>
+			<id>friends-releases</id>
+			<url>https://nexus.codespacedev.com/repository/friends-releases/</url>
+		</repository>
+	</distributionManagement>
+
 	<build>
 		<plugins>
 			<plugin>

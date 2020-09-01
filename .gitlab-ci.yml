@@ -1,0 +1,23 @@
+stages:
+  - build
+  - deploy
+
+build:
+  image: maven:3.6.1-jdk-11-slim
+  stage: build
+  variables:
+    MAVEN_OPTS: ""
+  script:
+    - mvn clean install -B
+  tags:
+    - ozan
+
+deploy:
+  image: maven:3.6.1-jdk-11-slim
+  stage: deploy
+  script:
+    - mvn -B -s .m2/settings.xml --batch-mode deploy
+  tags:
+    - ozan
+  only:
+  - master
