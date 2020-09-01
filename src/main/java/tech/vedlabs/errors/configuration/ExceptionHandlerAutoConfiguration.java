@@ -28,7 +28,8 @@ public class ExceptionHandlerAutoConfiguration {
             new TypeMismatchWebErrorHandler(),
             new MultipartWebErrorHandler(),
             new MissingRequestParametersExceptionHandler(),
-            new SpringSecurityWebExceptionHandler()
+            new SpringSecurityWebExceptionHandler(),
+            new SpringValidationWebErrorHandler()
     );
 
     @Bean

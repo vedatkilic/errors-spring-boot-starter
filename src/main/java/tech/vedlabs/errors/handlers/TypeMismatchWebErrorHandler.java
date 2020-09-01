@@ -1,6 +1,8 @@
 package tech.vedlabs.errors.handlers;
 
+import org.springframework.http.HttpStatus;
 import tech.vedlabs.errors.Argument;
+import tech.vedlabs.errors.ErrorCode;
 import tech.vedlabs.errors.ExceptionHandler;
 import tech.vedlabs.errors.HandledException;
 import tech.vedlabs.errors.codes.CommonErrorCode;
@@ -25,8 +27,9 @@ public class TypeMismatchWebErrorHandler implements ExceptionHandler {
     public HandledException handle(Throwable exception) {
         TypeMismatchException mismatchException = (TypeMismatchException) exception;
         List<Argument> arguments = getArguments(mismatchException);
+        ErrorCode errorCode = getErrorCode(mismatchException);
 
-        return new HandledException(CommonErrorCode.TYPE_MISMATCH, null, arguments, exception);
+        return new HandledException(errorCode, null, arguments, exception);
     }
 
     static List<Argument> getArguments(TypeMismatchException mismatchException) {
@@ -39,6 +42,26 @@ public class TypeMismatchWebErrorHandler implements ExceptionHandler {
         }
 
         return arguments;
+    }
+
+    static ErrorCode getErrorCode(TypeMismatchException mismatchException) {
+        return new ErrorCode() {
+            @Override
+            public HttpStatus getHttpStatus() {
+                return HttpStatus.BAD_REQUEST;
+            }
+
+            @Override
+            public String getCode() {
+                return String.format("%s.%s", "TYPE_MISMATCH", getPropertyName(mismatchException))
+                        .replace("{", "").replace("}", "");
+            }
+
+            @Override
+            public String getMessage() {
+                return null;
+            }
+        };
     }
 
     private static String getPropertyName(TypeMismatchException mismatchException) {
