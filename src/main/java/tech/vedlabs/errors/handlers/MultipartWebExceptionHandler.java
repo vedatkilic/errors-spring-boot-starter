@@ -1,20 +1,22 @@
 package tech.vedlabs.errors.handlers;
 
+import org.springframework.core.annotation.Order;
+import org.springframework.lang.NonNull;
+import org.springframework.web.multipart.MaxUploadSizeExceededException;
+import org.springframework.web.multipart.MultipartException;
 import tech.vedlabs.errors.Argument;
 import tech.vedlabs.errors.ErrorCode;
 import tech.vedlabs.errors.ExceptionHandler;
 import tech.vedlabs.errors.HandledException;
-import tech.vedlabs.errors.codes.CommonErrorCode;
-import org.springframework.lang.NonNull;
-import org.springframework.web.multipart.MaxUploadSizeExceededException;
-import org.springframework.web.multipart.MultipartException;
+import tech.vedlabs.errors.codes.GenericErrorCode;
 
 import java.util.List;
 
-import static tech.vedlabs.errors.Argument.arg;
 import static java.util.Collections.emptyList;
+import static tech.vedlabs.errors.Argument.arg;
 
-public class MultipartWebErrorHandler implements ExceptionHandler {
+@Order(3)
+public class MultipartWebExceptionHandler implements ExceptionHandler {
 
     @Override
     public boolean canHandle(Throwable exception) {
@@ -24,12 +26,12 @@ public class MultipartWebErrorHandler implements ExceptionHandler {
     @NonNull
     @Override
     public HandledException handle(Throwable exception) {
-        ErrorCode errorCode = CommonErrorCode.MULTIPART_EXPECTED;
+        ErrorCode errorCode = GenericErrorCode.MULTIPART_EXPECTED;
         List<Argument> arguments = emptyList();
 
         if (exception instanceof MaxUploadSizeExceededException) {
             long maxSize = ((MaxUploadSizeExceededException) exception).getMaxUploadSize();
-            errorCode = CommonErrorCode.MAX_SIZE;
+            errorCode = GenericErrorCode.MAX_SIZE;
             arguments.add(arg("max_size", maxSize));
         }
 

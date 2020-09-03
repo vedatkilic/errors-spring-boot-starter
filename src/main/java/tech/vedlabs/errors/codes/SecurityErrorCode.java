@@ -4,7 +4,7 @@ import lombok.Getter;
 import org.springframework.http.HttpStatus;
 import tech.vedlabs.errors.ErrorCode;
 
-public enum SpringSecurityErrorCode implements ErrorCode {
+public enum SecurityErrorCode implements ErrorCode {
 
     ACCESS_DENIED(HttpStatus.FORBIDDEN,"security.access_denied"),
     ACCOUNT_EXPIRED(HttpStatus.BAD_REQUEST, "security.account_expired"),
@@ -14,11 +14,11 @@ public enum SpringSecurityErrorCode implements ErrorCode {
     USER_LOCKED(HttpStatus.BAD_REQUEST, "security.user_locked"),
     USER_DISABLED(HttpStatus.BAD_REQUEST, "security.user_disabled");
 
-    SpringSecurityErrorCode(HttpStatus httpStatus, String code) {
+    SecurityErrorCode(HttpStatus httpStatus, String code) {
        this(httpStatus, code, null);
     }
 
-    SpringSecurityErrorCode(HttpStatus httpStatus, String code, String message) {
+    SecurityErrorCode(HttpStatus httpStatus, String code, String message) {
         this.httpStatus = httpStatus;
         this.code = code;
         this.message = message;

@@ -1,6 +1,8 @@
 package tech.vedlabs.errors.handlers;
 
+import lombok.RequiredArgsConstructor;
 import org.springframework.beans.TypeMismatchException;
+import org.springframework.core.annotation.Order;
 import org.springframework.http.HttpStatus;
 import org.springframework.validation.BindException;
 import org.springframework.validation.BindingResult;
@@ -12,12 +14,15 @@ import tech.vedlabs.errors.ExceptionHandler;
 import tech.vedlabs.errors.HandledException;
 
 import javax.validation.ConstraintViolation;
-
 import java.util.List;
 
 import static java.util.Collections.emptyList;
 
-public class SpringValidationWebErrorHandler implements ExceptionHandler {
+@Order(7)
+@RequiredArgsConstructor
+public class SpringValidationWebExceptionHandler implements ExceptionHandler {
+
+    private final TypeMismatchWebExceptionHandler typeMismatchWebExceptionHandler;
 
     @Override
     public boolean canHandle(Throwable exception) {
@@ -50,7 +55,7 @@ public class SpringValidationWebErrorHandler implements ExceptionHandler {
 
         if (errorCode == null) {
             try {
-                errorCode = TypeMismatchWebErrorHandler.getErrorCode(error.unwrap(TypeMismatchException.class));
+                errorCode = typeMismatchWebExceptionHandler.getErrorCode(error.unwrap(TypeMismatchException.class));
             } catch (Exception ignored) {
             }
         }
@@ -83,7 +88,7 @@ public class SpringValidationWebErrorHandler implements ExceptionHandler {
         }
 
         try {
-            return TypeMismatchWebErrorHandler.getArguments(error.unwrap(TypeMismatchException.class));
+            return TypeMismatchWebExceptionHandler.getArguments(error.unwrap(TypeMismatchException.class));
         } catch (Exception ignored) {
         }
 

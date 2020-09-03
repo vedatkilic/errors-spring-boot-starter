@@ -8,7 +8,9 @@ public enum MissingRequestParamErrorCode implements ErrorCode {
 
     MISSING_HEADER(HttpStatus.BAD_REQUEST),
     MISSING_COOKIE(HttpStatus.BAD_REQUEST),
-    MISSING_MATRIX_VARIABLE(HttpStatus.BAD_REQUEST);
+    MISSING_MATRIX_VARIABLE(HttpStatus.BAD_REQUEST),
+    MISSING_PART(HttpStatus.BAD_REQUEST),
+    MISSING_PARAMETER(HttpStatus.BAD_REQUEST);
 
     MissingRequestParamErrorCode(HttpStatus httpStatus) {
         this.httpStatus = httpStatus;

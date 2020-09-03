@@ -1,20 +1,22 @@
 package tech.vedlabs.errors.handlers;
 
+import org.springframework.core.annotation.Order;
+import org.springframework.web.bind.MissingMatrixVariableException;
+import org.springframework.web.bind.MissingRequestCookieException;
+import org.springframework.web.bind.MissingRequestHeaderException;
 import tech.vedlabs.errors.Argument;
 import tech.vedlabs.errors.ErrorCode;
 import tech.vedlabs.errors.ExceptionHandler;
 import tech.vedlabs.errors.HandledException;
-import tech.vedlabs.errors.codes.CommonErrorCode;
+import tech.vedlabs.errors.codes.GenericErrorCode;
 import tech.vedlabs.errors.codes.MissingRequestParamErrorCode;
-import org.springframework.web.bind.MissingMatrixVariableException;
-import org.springframework.web.bind.MissingRequestCookieException;
-import org.springframework.web.bind.MissingRequestHeaderException;
 
 import java.util.ArrayList;
 import java.util.List;
 
 import static tech.vedlabs.errors.Argument.arg;
 
+@Order(2)
 public class MissingRequestParametersExceptionHandler implements ExceptionHandler {
 
     @Override
@@ -27,7 +29,7 @@ public class MissingRequestParametersExceptionHandler implements ExceptionHandle
     @Override
     public HandledException handle(Throwable exception) {
         List<Argument> arguments = new ArrayList<>();
-        ErrorCode errorCode = CommonErrorCode.UNKNOWN_ERROR;
+        ErrorCode errorCode = GenericErrorCode.UNKNOWN_ERROR;
 
         if (exception instanceof MissingRequestHeaderException) {
             MissingRequestHeaderException headerException = (MissingRequestHeaderException) exception;
@@ -46,7 +48,7 @@ public class MissingRequestParametersExceptionHandler implements ExceptionHandle
             arguments.add(arg("name", variableException.getVariableName()));
             arguments.add(arg("expected", variableException.getParameter()));
 
-            errorCode =MissingRequestParamErrorCode.MISSING_MATRIX_VARIABLE;
+            errorCode = MissingRequestParamErrorCode.MISSING_MATRIX_VARIABLE;
         }
 
         return new HandledException(errorCode, null, arguments, exception);

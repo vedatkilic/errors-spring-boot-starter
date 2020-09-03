@@ -2,40 +2,66 @@ package tech.vedlabs.errors.configuration;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
-import org.springframework.core.annotation.AnnotationAwareOrderComparator;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnWebApplication;
+import org.springframework.context.MessageSource;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
 import tech.vedlabs.errors.*;
 import tech.vedlabs.errors.handlers.*;
 import tech.vedlabs.errors.message.DefaultErrorMessageReader;
 import tech.vedlabs.errors.message.ErrorMessageReader;
 import tech.vedlabs.errors.message.TemplateAwareMessageSource;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnWebApplication;
-import org.springframework.context.MessageSource;
-import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Configuration;
 
-import java.util.*;
+import java.util.List;
+import java.util.Set;
 
 @Configuration
 @ConditionalOnProperty(value = "errors.enabled", havingValue = "true")
 @ConditionalOnWebApplication
 public class ExceptionHandlerAutoConfiguration {
 
-    private static final List<ExceptionHandler> BUILT_IN_HANDLERS = Arrays.asList(
-            new ConversionFailedExceptionHandler(),
-            new BaseExceptionHandler(),
-            new TypeMismatchWebErrorHandler(),
-            new MultipartWebErrorHandler(),
-            new MissingRequestParametersExceptionHandler(),
-            new SpringSecurityWebExceptionHandler(),
-            new SpringValidationWebErrorHandler()
-    );
+    @Bean
+    @ConditionalOnMissingBean(BaseExceptionHandler.class)
+    public BaseExceptionHandler exceptionHandler() {
+        return new BaseExceptionHandler();
+    }
 
     @Bean
-    @ConditionalOnMissingBean
-    public ExceptionHandler exceptionHandler() {
-        return new DefaultExceptionHandler();
+    @ConditionalOnMissingBean(TypeMismatchWebExceptionHandler.class)
+    public TypeMismatchWebExceptionHandler typeMismatchWebExceptionHandler() {
+        return new TypeMismatchWebExceptionHandler();
+    }
+
+    @Bean
+    @ConditionalOnMissingBean(MultipartWebExceptionHandler.class)
+    public MultipartWebExceptionHandler multipartWebExceptionHandler() {
+        return new MultipartWebExceptionHandler();
+    }
+
+    @Bean
+    @ConditionalOnMissingBean(MissingRequestParametersExceptionHandler.class)
+    public MissingRequestParametersExceptionHandler missingRequestParametersExceptionHandler() {
+        return new MissingRequestParametersExceptionHandler();
+    }
+
+    @Bean
+    @ConditionalOnMissingBean(ConversionFailedExceptionHandler.class)
+    public SpringSecurityWebExceptionHandler springSecurityWebExceptionHandler() {
+        return new SpringSecurityWebExceptionHandler();
+    }
+
+    @Bean
+    @ConditionalOnMissingBean(ConversionFailedExceptionHandler.class)
+    public ConversionFailedExceptionHandler conversionFailedExceptionHandler() {
+        return new ConversionFailedExceptionHandler();
+    }
+
+    @Bean
+    @ConditionalOnMissingBean(SpringValidationWebExceptionHandler.class)
+    public SpringValidationWebExceptionHandler conversionFailedExceptionHandler(TypeMismatchWebExceptionHandler typeMismatchWebExceptionHandler) {
+        return new SpringValidationWebExceptionHandler(typeMismatchWebExceptionHandler);
     }
 
     @Bean
@@ -66,23 +92,11 @@ public class ExceptionHandlerAutoConfiguration {
     @ConditionalOnMissingBean
     public ExceptionHandlerRegistry exceptionHandlerRegistry(
                 List<ExceptionHandler> exceptionHandlers,
-                ExceptionHandler exceptionHandler,
                 ExceptionLogger exceptionLogger,
                 @Autowired(required = false) Set<ExceptionHandlerPostProcessor> postProcessors,
                 TemplateAwareMessageSource errorMessageSource
             ) {
-
-        List<ExceptionHandler> handlers = new ArrayList<>(BUILT_IN_HANDLERS);
-
-        if (exceptionHandlers != null && !exceptionHandlers.isEmpty()) {
-            exceptionHandlers.remove(exceptionHandler);
-            exceptionHandlers.removeIf(Objects::isNull);
-            exceptionHandlers.sort(AnnotationAwareOrderComparator.INSTANCE);
-
-            handlers.addAll(exceptionHandlers);
-        }
-
-        return new ExceptionHandlerRegistry(handlers, exceptionHandler, exceptionLogger, postProcessors, errorMessageSource);
+        return new ExceptionHandlerRegistry(exceptionHandlers, new DefaultExceptionHandler(), exceptionLogger, postProcessors, errorMessageSource);
     }
 
     @Bean

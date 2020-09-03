@@ -1,21 +1,22 @@
 package tech.vedlabs.errors.handlers;
 
+import org.springframework.beans.TypeMismatchException;
+import org.springframework.core.annotation.Order;
 import org.springframework.http.HttpStatus;
+import org.springframework.lang.NonNull;
+import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 import tech.vedlabs.errors.Argument;
 import tech.vedlabs.errors.ErrorCode;
 import tech.vedlabs.errors.ExceptionHandler;
 import tech.vedlabs.errors.HandledException;
-import tech.vedlabs.errors.codes.CommonErrorCode;
-import org.springframework.beans.TypeMismatchException;
-import org.springframework.lang.NonNull;
-import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 
 import java.util.ArrayList;
 import java.util.List;
 
 import static tech.vedlabs.errors.Argument.arg;
 
-public class TypeMismatchWebErrorHandler implements ExceptionHandler {
+@Order(8)
+public class TypeMismatchWebExceptionHandler implements ExceptionHandler {
 
     @Override
     public boolean canHandle(Throwable exception) {
@@ -44,7 +45,7 @@ public class TypeMismatchWebErrorHandler implements ExceptionHandler {
         return arguments;
     }
 
-    static ErrorCode getErrorCode(TypeMismatchException mismatchException) {
+    ErrorCode getErrorCode(TypeMismatchException mismatchException) {
         return new ErrorCode() {
             @Override
             public HttpStatus getHttpStatus() {

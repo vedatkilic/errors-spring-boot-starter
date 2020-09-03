@@ -4,14 +4,14 @@ import org.springframework.http.HttpStatus;
 import tech.vedlabs.errors.Argument;
 import tech.vedlabs.errors.ErrorCode;
 
+import javax.validation.ConstraintViolation;
+import javax.validation.constraints.*;
 import java.lang.annotation.Annotation;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
-import javax.validation.ConstraintViolation;
-import javax.validation.constraints.*;
 
 import static java.util.Arrays.asList;
 import static tech.vedlabs.errors.Argument.arg;
