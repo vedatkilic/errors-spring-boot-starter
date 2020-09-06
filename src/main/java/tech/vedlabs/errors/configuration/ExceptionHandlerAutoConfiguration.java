@@ -47,7 +47,7 @@ public class ExceptionHandlerAutoConfiguration {
     }
 
     @Bean
-    @ConditionalOnMissingBean(ConversionFailedExceptionHandler.class)
+    @ConditionalOnMissingBean(SpringSecurityWebExceptionHandler.class)
     public SpringSecurityWebExceptionHandler springSecurityWebExceptionHandler() {
         return new SpringSecurityWebExceptionHandler();
     }
@@ -62,6 +62,19 @@ public class ExceptionHandlerAutoConfiguration {
     @ConditionalOnMissingBean(SpringValidationWebExceptionHandler.class)
     public SpringValidationWebExceptionHandler conversionFailedExceptionHandler(TypeMismatchWebExceptionHandler typeMismatchWebExceptionHandler) {
         return new SpringValidationWebExceptionHandler(typeMismatchWebExceptionHandler);
+    }
+
+
+    @Bean
+    @ConditionalOnMissingBean(ResponseStatusExceptionHandler.class)
+    public ResponseStatusExceptionHandler responseStatusExceptionHandler(SpringValidationWebExceptionHandler springValidationWebExceptionHandler, TypeMismatchWebExceptionHandler typeMismatchWebExceptionHandler) {
+        return new ResponseStatusExceptionHandler(springValidationWebExceptionHandler, typeMismatchWebExceptionHandler);
+    }
+
+    @Bean
+    @ConditionalOnMissingBean(ServletWebExceptionHandler.class)
+    public ServletWebExceptionHandler servletWebExceptionHandler() {
+        return new ServletWebExceptionHandler();
     }
 
     @Bean
