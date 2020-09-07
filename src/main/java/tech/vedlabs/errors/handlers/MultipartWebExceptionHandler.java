@@ -4,13 +4,11 @@ import org.springframework.core.annotation.Order;
 import org.springframework.lang.NonNull;
 import org.springframework.web.multipart.MaxUploadSizeExceededException;
 import org.springframework.web.multipart.MultipartException;
-import tech.vedlabs.errors.Argument;
-import tech.vedlabs.errors.ErrorCode;
-import tech.vedlabs.errors.ExceptionHandler;
-import tech.vedlabs.errors.HandledException;
+import tech.vedlabs.errors.*;
 import tech.vedlabs.errors.codes.GenericErrorCode;
 
 import java.util.List;
+import java.util.Locale;
 
 import static java.util.Collections.emptyList;
 import static tech.vedlabs.errors.Argument.arg;
@@ -23,9 +21,8 @@ public class MultipartWebExceptionHandler implements ExceptionHandler {
         return exception instanceof MultipartException;
     }
 
-    @NonNull
     @Override
-    public HandledException handle(Throwable exception) {
+    public HandledException handle(Throwable exception, Locale locale) {
         ErrorCode errorCode = GenericErrorCode.MULTIPART_EXPECTED;
         List<Argument> arguments = emptyList();
 
@@ -35,6 +32,6 @@ public class MultipartWebExceptionHandler implements ExceptionHandler {
             arguments.add(arg("max_size", maxSize));
         }
 
-        return new HandledException(errorCode, null, arguments, exception);
+        return new HandledException(errorCode.getHttpStatus(), new ErrorMessage(errorCode.getCode(), arguments, exception.getMessage()));
     }
 }

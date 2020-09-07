@@ -9,16 +9,15 @@ import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.bind.support.WebExchangeBindException;
 import org.springframework.web.server.*;
-import tech.vedlabs.errors.Argument;
-import tech.vedlabs.errors.ErrorCode;
 import tech.vedlabs.errors.ExceptionHandler;
-import tech.vedlabs.errors.HandledException;
+import tech.vedlabs.errors.*;
 import tech.vedlabs.errors.codes.GenericErrorCode;
 import tech.vedlabs.errors.codes.MissingRequestParamErrorCode;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
 import java.util.List;
+import java.util.Locale;
 import java.util.Objects;
 import java.util.Set;
 
@@ -40,26 +39,12 @@ public class ResponseStatusExceptionHandler implements ExceptionHandler {
     }
 
     @Override
-    public HandledException handle(Throwable exception) {
-        if (exception instanceof UnsupportedMediaTypeStatusException) {
-            Set<String> types = getMediaTypes(((UnsupportedMediaTypeStatusException) exception).getSupportedMediaTypes());
-            List<Argument> args = types.isEmpty() ? emptyList() : singletonList(arg("types", types));
-            return new HandledException(GenericErrorCode.NOT_SUPPORTED, null, args, exception);
-        }
-
-        if (exception instanceof NotAcceptableStatusException) {
-            Set<String> types = getMediaTypes(((NotAcceptableStatusException) exception).getSupportedMediaTypes());
-            List<Argument> args = types.isEmpty() ? emptyList() : singletonList(arg("types", types));
-            return new HandledException(GenericErrorCode.NOT_ACCEPTABLE, null, args, exception);
-        }
-
-        if (exception instanceof MethodNotAllowedException) {
-            String httpMethod = ((MethodNotAllowedException) exception).getHttpMethod();
-            return new HandledException(GenericErrorCode.METHOD_NOT_ALLOWED, null, singletonList(arg("method", httpMethod)), exception);
-        }
+    public HandledException handle(Throwable exception, Locale locale) {
+        List<Argument> args = null;
+        ErrorCode errorCode = GenericErrorCode.UNKNOWN_ERROR;
 
         if (exception instanceof WebExchangeBindException) {
-            return validationWebErrorHandler.handle(exception);
+            return validationWebErrorHandler.handle(exception, locale);
         }
 
         if (exception instanceof ServerWebInputException) {
@@ -70,20 +55,38 @@ public class ResponseStatusExceptionHandler implements ExceptionHandler {
                     cause.initPropertyName(Objects.requireNonNull(parameter.getParameterName()));
                 }
 
-                return typeMismatchWebExceptionHandler.handle(cause);
+                return typeMismatchWebExceptionHandler.handle(cause, locale);
             }
 
             HandledException handledException = handleMissingParameters(parameter);
             if (handledException != null) return handledException;
-            return new HandledException(GenericErrorCode.INVALID_OR_MISSING_BODY, null, null, exception);
+            errorCode = GenericErrorCode.INVALID_OR_MISSING_BODY;
+        }
+
+        if (exception instanceof UnsupportedMediaTypeStatusException) {
+            Set<String> types = getMediaTypes(((UnsupportedMediaTypeStatusException) exception).getSupportedMediaTypes());
+            args = types.isEmpty() ? emptyList() : singletonList(arg("types", types));
+            errorCode = GenericErrorCode.NOT_SUPPORTED;
+        }
+
+        if (exception instanceof NotAcceptableStatusException) {
+            Set<String> types = getMediaTypes(((NotAcceptableStatusException) exception).getSupportedMediaTypes());
+            args = types.isEmpty() ? emptyList() : singletonList(arg("types", types));
+            errorCode = GenericErrorCode.NOT_ACCEPTABLE;
+        }
+
+        if (exception instanceof MethodNotAllowedException) {
+            String httpMethod = ((MethodNotAllowedException) exception).getHttpMethod();
+            args = singletonList(arg("method", httpMethod));
+            errorCode = GenericErrorCode.METHOD_NOT_ALLOWED;
         }
 
         if (exception instanceof ResponseStatusException) {
             HttpStatus status = ((ResponseStatusException) exception).getStatus();
-            if (status == HttpStatus.NOT_FOUND) return new HandledException(GenericErrorCode.NO_HANDLER, null, null, exception);
-            return new HandledException(GenericErrorCode.UNKNOWN_ERROR, null, null, exception);
+            if (status == HttpStatus.NOT_FOUND) errorCode = GenericErrorCode.NO_HANDLER;
         }
-        return new HandledException(GenericErrorCode.UNKNOWN_ERROR, null, null, exception);
+
+        return new HandledException(errorCode.getHttpStatus(), new ErrorMessage(errorCode.getCode(), args, exception.getMessage()));
     }
 
     private HandledException handleMissingParameters(MethodParameter parameter) {
@@ -123,7 +126,7 @@ public class ResponseStatusExceptionHandler implements ExceptionHandler {
         }
 
         if (code != null) {
-            return new HandledException(code, null, asList(arg("name", parameterName), arg("expected",parameter.getParameterType().getName())), null);
+            return new HandledException(code.getHttpStatus(), new ErrorMessage(code.getCode(), asList(arg("name", parameterName), arg("expected",parameter.getParameterType().getName())), null));
         }
 
         return null;

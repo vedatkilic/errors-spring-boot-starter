@@ -2,15 +2,17 @@ package tech.vedlabs.errors.handlers;
 
 
 import org.springframework.core.annotation.Order;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.authentication.*;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
+import tech.vedlabs.errors.ErrorCode;
+import tech.vedlabs.errors.ErrorMessage;
 import tech.vedlabs.errors.ExceptionHandler;
 import tech.vedlabs.errors.HandledException;
 import tech.vedlabs.errors.codes.GenericErrorCode;
 import tech.vedlabs.errors.codes.SecurityErrorCode;
 
-import javax.security.auth.login.AccountExpiredException;
-import java.nio.file.AccessDeniedException;
+import java.util.Locale;
 
 @Order(6)
 public class SpringSecurityWebExceptionHandler implements ExceptionHandler {
@@ -28,31 +30,31 @@ public class SpringSecurityWebExceptionHandler implements ExceptionHandler {
     }
 
     @Override
-    public HandledException handle(Throwable exception) {
+    public HandledException handle(Throwable exception, Locale locale) {
+        ErrorCode errorCode = GenericErrorCode.UNKNOWN_ERROR;
         if (exception instanceof AccessDeniedException)
-            return HandledException.builder().errorCode(SecurityErrorCode.ACCESS_DENIED).exception(exception).build();
-
+            errorCode = SecurityErrorCode.ACCESS_DENIED;
         if (exception instanceof AccountExpiredException)
-            return HandledException.builder().errorCode(SecurityErrorCode.ACCOUNT_EXPIRED).exception(exception).build();
+            errorCode = SecurityErrorCode.ACCOUNT_EXPIRED;
 
         if (exception instanceof AuthenticationCredentialsNotFoundException)
-            return HandledException.builder().errorCode(SecurityErrorCode.AUTH_REQUIRED).exception(exception).build();
+            errorCode = SecurityErrorCode.AUTH_REQUIRED;
 
         if (exception instanceof AuthenticationServiceException)
-            return HandledException.builder().errorCode(SecurityErrorCode.INTERNAL_ERROR).exception(exception).build();
+            errorCode = SecurityErrorCode.INTERNAL_ERROR;
 
         if (exception instanceof BadCredentialsException)
-            return HandledException.builder().errorCode(SecurityErrorCode.BAD_CREDENTIALS).exception(exception).build();
+            errorCode = SecurityErrorCode.BAD_CREDENTIALS;
 
         if (exception instanceof UsernameNotFoundException)
-            return HandledException.builder().errorCode(SecurityErrorCode.BAD_CREDENTIALS).exception(exception).build();
+            errorCode = SecurityErrorCode.BAD_CREDENTIALS;
 
         if (exception instanceof InsufficientAuthenticationException)
-            return HandledException.builder().errorCode(SecurityErrorCode.AUTH_REQUIRED).exception(exception).build();
+            errorCode = SecurityErrorCode.AUTH_REQUIRED;
 
-        if (exception instanceof LockedException) return HandledException.builder().errorCode(SecurityErrorCode.USER_LOCKED).exception(exception).build();
-        if (exception instanceof DisabledException) return HandledException.builder().errorCode(SecurityErrorCode.USER_DISABLED).exception(exception).build();
+        if (exception instanceof LockedException) errorCode = SecurityErrorCode.USER_LOCKED;
+        if (exception instanceof DisabledException) errorCode = SecurityErrorCode.USER_DISABLED;
 
-        return HandledException.builder().errorCode(GenericErrorCode.UNKNOWN_ERROR).exception(exception).build();
+        return new HandledException(errorCode.getHttpStatus(), new ErrorMessage(errorCode.getCode(), null, exception.getMessage()));
     }
 }

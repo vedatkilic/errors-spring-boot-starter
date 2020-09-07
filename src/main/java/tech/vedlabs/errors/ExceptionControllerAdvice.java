@@ -32,7 +32,7 @@ public class ExceptionControllerAdvice {
     @ResponseBody
     @ExceptionHandler
     public ResponseEntity<?> handleException(Exception exception, HttpServletRequest request, Locale locale) throws Exception {
-        ApiError apiError = exceptionHandlerRegistry.handle(exception, request, locale);
-        return webResponseExceptionTranslator.translate(apiError);
+        ExceptionResponse exceptionResponse = exceptionHandlerRegistry.handle(exception, request, locale);
+        return webResponseExceptionTranslator.translate(exceptionResponse);
     }
 }

@@ -1,8 +1,6 @@
 package tech.vedlabs.errors.handlers;
 
-import org.springframework.http.HttpStatus;
 import tech.vedlabs.errors.Argument;
-import tech.vedlabs.errors.ErrorCode;
 
 import javax.validation.ConstraintViolation;
 import javax.validation.constraints.*;
@@ -43,7 +41,7 @@ final class ConstraintViolations {
         return args;
     }
 
-    static ErrorCode getErrorCode(ConstraintViolation<?> violation) {
+    static String getErrorCode(ConstraintViolation<?> violation) {
         final String code = violation.getMessageTemplate();
 
         boolean shouldGenerateDefaultErrorCode = code == null || code.trim().isEmpty() ||
@@ -52,40 +50,9 @@ final class ConstraintViolations {
             String prefix = violation.getPropertyPath().toString();
             Class<? extends Annotation> annotation = violation.getConstraintDescriptor().getAnnotation().annotationType();
             String suffix = ERROR_CODE_MAPPING.getOrDefault(annotation, annotation.getSimpleName());
-            return new ErrorCode() {
-                @Override
-                public HttpStatus getHttpStatus() {
-                    return null;
-                }
-
-                @Override
-                public String getCode() {
-                    return prefix + "." + suffix;
-                }
-
-                @Override
-                public String getMessage() {
-                    return null;
-                }
-            };
+            return prefix + "." + suffix;
         }
-
-         return new ErrorCode() {
-             @Override
-             public HttpStatus getHttpStatus() {
-                 return HttpStatus.BAD_REQUEST;
-             }
-
-             @Override
-             public String getCode() {
-                 return code.replace("{", "").replace("}", "");
-             }
-
-             @Override
-             public String getMessage() {
-                 return null;
-             }
-         };
+        return code.replace("{", "").replace("}", "");
     }
 
     private static Map<Class<? extends Annotation>, String> initErrorCodeMapping() {

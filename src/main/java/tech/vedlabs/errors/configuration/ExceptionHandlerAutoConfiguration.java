@@ -10,8 +10,8 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import tech.vedlabs.errors.*;
 import tech.vedlabs.errors.handlers.*;
-import tech.vedlabs.errors.message.DefaultErrorMessageReader;
-import tech.vedlabs.errors.message.ErrorMessageReader;
+import tech.vedlabs.errors.message.DefaultErrorMessageSource;
+import tech.vedlabs.errors.message.ErrorMessageSource;
 import tech.vedlabs.errors.message.TemplateAwareMessageSource;
 
 import java.util.List;
@@ -60,8 +60,8 @@ public class ExceptionHandlerAutoConfiguration {
 
     @Bean
     @ConditionalOnMissingBean(SpringValidationWebExceptionHandler.class)
-    public SpringValidationWebExceptionHandler conversionFailedExceptionHandler(TypeMismatchWebExceptionHandler typeMismatchWebExceptionHandler) {
-        return new SpringValidationWebExceptionHandler(typeMismatchWebExceptionHandler);
+    public SpringValidationWebExceptionHandler conversionFailedExceptionHandler(TypeMismatchWebExceptionHandler typeMismatchWebExceptionHandler, TemplateAwareMessageSource templateAwareMessageSource) {
+        return new SpringValidationWebExceptionHandler(typeMismatchWebExceptionHandler, templateAwareMessageSource);
     }
 
 
@@ -85,8 +85,8 @@ public class ExceptionHandlerAutoConfiguration {
 
     @Bean
     @ConditionalOnMissingBean
-    public ErrorMessageReader errorMessageReader(final MessageSource messageSource) {
-        return new DefaultErrorMessageReader(messageSource);
+    public ErrorMessageSource errorMessageReader(final MessageSource messageSource) {
+        return new DefaultErrorMessageSource(messageSource);
     }
 
     @Bean
@@ -97,8 +97,8 @@ public class ExceptionHandlerAutoConfiguration {
 
     @Bean
     @ConditionalOnMissingBean
-    public TemplateAwareMessageSource errorMessageSource(final ErrorMessageReader errorMessageReader) {
-        return new TemplateAwareMessageSource(errorMessageReader);
+    public TemplateAwareMessageSource errorMessageSource(final ErrorMessageSource errorMessageSource) {
+        return new TemplateAwareMessageSource(errorMessageSource);
     }
 
     @Bean

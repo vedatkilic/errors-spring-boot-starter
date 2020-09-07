@@ -9,13 +9,12 @@ import org.springframework.web.HttpRequestMethodNotSupportedException;
 import org.springframework.web.bind.MissingServletRequestParameterException;
 import org.springframework.web.multipart.support.MissingServletRequestPartException;
 import org.springframework.web.servlet.NoHandlerFoundException;
-import tech.vedlabs.errors.Argument;
-import tech.vedlabs.errors.ExceptionHandler;
-import tech.vedlabs.errors.HandledException;
+import tech.vedlabs.errors.*;
 import tech.vedlabs.errors.codes.GenericErrorCode;
 import tech.vedlabs.errors.codes.MissingRequestParamErrorCode;
 
 import java.util.List;
+import java.util.Locale;
 import java.util.Set;
 
 import static java.util.Arrays.asList;
@@ -38,46 +37,51 @@ public class ServletWebExceptionHandler implements ExceptionHandler {
     }
 
     @Override
-    public HandledException handle(Throwable exception) {
-        if (exception instanceof HttpMessageNotReadableException)
-            return new HandledException(GenericErrorCode.INVALID_OR_MISSING_BODY, null, null, exception);
+    public HandledException handle(Throwable exception, Locale locale) {
+        ErrorCode errorCode = GenericErrorCode.UNKNOWN_ERROR;
+        List<Argument> args = null;
+
+        if (exception instanceof HttpMessageNotReadableException) errorCode = GenericErrorCode.INVALID_OR_MISSING_BODY;
 
         if (exception instanceof HttpMediaTypeNotAcceptableException) {
             Set<String> types = getMediaTypes(((HttpMediaTypeNotAcceptableException) exception).getSupportedMediaTypes());
-            List<Argument> args = types.isEmpty() ? emptyList() : singletonList(arg("types", types));
-            return new HandledException(GenericErrorCode.NOT_ACCEPTABLE, null, args, exception);
+            errorCode = GenericErrorCode.NOT_ACCEPTABLE;
+            args = types.isEmpty() ? emptyList() : singletonList(arg("types", types));
         }
 
         if (exception instanceof HttpMediaTypeNotSupportedException) {
             MediaType contentType = ((HttpMediaTypeNotSupportedException) exception).getContentType();
-            List<Argument> arguments = null;
-            if (contentType != null) arguments = singletonList(arg("type", contentType.toString()));
-            return new HandledException(GenericErrorCode.NOT_SUPPORTED, null, arguments == null ? emptyList() : arguments, exception);
+            if (contentType != null) args = singletonList(arg("type", contentType.toString()));
+            errorCode = GenericErrorCode.NOT_SUPPORTED;
         }
 
         if (exception instanceof HttpRequestMethodNotSupportedException) {
             String method = ((HttpRequestMethodNotSupportedException) exception).getMethod();
-            return new HandledException(GenericErrorCode.METHOD_NOT_ALLOWED, null, singletonList(arg("method", method)), exception);
+            errorCode = GenericErrorCode.METHOD_NOT_ALLOWED;
+            args = singletonList(arg("method", method));
         }
 
         if (exception instanceof MissingServletRequestParameterException) {
             MissingServletRequestParameterException actualException = (MissingServletRequestParameterException) exception;
             String name = actualException.getParameterName();
             String type = actualException.getParameterType();
-            return new HandledException(MissingRequestParamErrorCode.MISSING_PART, null, asList(arg("name", name), arg("expected", type)), exception);
+            errorCode = MissingRequestParamErrorCode.MISSING_PART;
+            args = asList(arg("name", name), arg("expected", type));
         }
 
         if (exception instanceof MissingServletRequestPartException) {
             String name = ((MissingServletRequestPartException) exception).getRequestPartName();
-            return new HandledException(MissingRequestParamErrorCode.MISSING_PART, null, singletonList(arg("name", name)), exception);
+            errorCode = MissingRequestParamErrorCode.MISSING_PART;
+            args = singletonList(arg("name", name));
         }
 
         if (exception instanceof NoHandlerFoundException) {
             String url = ((NoHandlerFoundException) exception).getRequestURL();
-            return new HandledException(GenericErrorCode.NO_HANDLER, null, asList(arg("path", url)), exception);
+            errorCode = GenericErrorCode.NO_HANDLER;
+            args = singletonList(arg("path", url));
         }
 
-        return new HandledException(GenericErrorCode.UNKNOWN_ERROR, null, null, exception);
+        return new HandledException(errorCode.getHttpStatus(), new ErrorMessage(errorCode.getCode(), args, exception.getMessage()));
     }
 
     private Set<String> getMediaTypes(List<MediaType> mediaTypes) {

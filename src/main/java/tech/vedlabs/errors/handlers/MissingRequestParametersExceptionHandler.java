@@ -4,15 +4,13 @@ import org.springframework.core.annotation.Order;
 import org.springframework.web.bind.MissingMatrixVariableException;
 import org.springframework.web.bind.MissingRequestCookieException;
 import org.springframework.web.bind.MissingRequestHeaderException;
-import tech.vedlabs.errors.Argument;
-import tech.vedlabs.errors.ErrorCode;
-import tech.vedlabs.errors.ExceptionHandler;
-import tech.vedlabs.errors.HandledException;
+import tech.vedlabs.errors.*;
 import tech.vedlabs.errors.codes.GenericErrorCode;
 import tech.vedlabs.errors.codes.MissingRequestParamErrorCode;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 
 import static tech.vedlabs.errors.Argument.arg;
 
@@ -27,7 +25,7 @@ public class MissingRequestParametersExceptionHandler implements ExceptionHandle
     }
 
     @Override
-    public HandledException handle(Throwable exception) {
+    public HandledException handle(Throwable exception, Locale locale) {
         List<Argument> arguments = new ArrayList<>();
         ErrorCode errorCode = GenericErrorCode.UNKNOWN_ERROR;
 
@@ -51,6 +49,6 @@ public class MissingRequestParametersExceptionHandler implements ExceptionHandle
             errorCode = MissingRequestParamErrorCode.MISSING_MATRIX_VARIABLE;
         }
 
-        return new HandledException(errorCode, null, arguments, exception);
+        return new HandledException(errorCode.getHttpStatus(), new ErrorMessage(errorCode.getCode(), arguments, exception.getMessage()));
     }
 }

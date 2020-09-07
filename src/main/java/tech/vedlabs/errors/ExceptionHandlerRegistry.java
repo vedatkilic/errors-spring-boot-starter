@@ -24,7 +24,7 @@ public class ExceptionHandlerRegistry {
 
     private final TemplateAwareMessageSource templateAwareMessageSource;
 
-    public ApiError handle(Exception exception, HttpServletRequest httpRequest, Locale locale) {
+    public ExceptionResponse handle(Exception exception, HttpServletRequest httpRequest, Locale locale) {
         if (locale == null) locale = Locale.ROOT;
         exceptionLogger.log(exception);
         log.debug("About to handle an exception", exception);
@@ -32,23 +32,20 @@ public class ExceptionHandlerRegistry {
         ExceptionHandler handler = findHandler(exception);
         log.debug("The '{}' is going to handle the '{}' exception", className(handler), className(exception));
 
-        HandledException handledException = handler.handle(exception);
-
-        String message = templateAwareMessageSource.interpolate(handledException, locale);
-
-        ApiError apiError = ApiError.builder()
-                .errorCode(handledException.getErrorCode())
+        HandledException handledException = handler.handle(exception, locale);
+        String message = templateAwareMessageSource.interpolate(handledException.getErrorMessage(), locale);
+        ExceptionResponse exceptionResponse = ExceptionResponse.builder()
+                .errorCode(handledException.getErrorMessage().getErrorCode())
                 .message(message)
+                .statusCode(handledException.getStatusCode())
                 .errorDetail(handledException.getErrorDetail())
-                .request(httpRequest)
-                .exception(exception)
                 .build();
 
         if(!CollectionUtils.isEmpty(exceptionHandlerPostProcessors)) {
-            exceptionHandlerPostProcessors.forEach(postProcessor -> postProcessor.process(apiError));
+            exceptionHandlerPostProcessors.forEach(postProcessor -> postProcessor.process(exceptionResponse));
         }
 
-        return apiError;
+        return exceptionResponse;
     }
 
     private ExceptionHandler findHandler(Throwable exception) {

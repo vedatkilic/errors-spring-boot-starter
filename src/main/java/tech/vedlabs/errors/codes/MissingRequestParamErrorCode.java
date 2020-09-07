@@ -23,9 +23,4 @@ public enum MissingRequestParamErrorCode implements ErrorCode {
     public String getCode() {
         return this.name();
     }
-
-    @Override
-    public String getMessage() {
-        return null;
-    }
 }

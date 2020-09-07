@@ -4,7 +4,7 @@ import org.springframework.http.ResponseEntity;
 
 public class DefaultWebResponseExceptionTranslator implements WebResponseExceptionTranslator {
     @Override
-    public ResponseEntity translate(ApiError apiError) throws Exception {
-        return new ResponseEntity(apiError, apiError.getHttpStatus());
+    public ResponseEntity translate(ExceptionResponse exceptionResponse) throws Exception {
+        return new ResponseEntity(exceptionResponse, exceptionResponse.getStatusCode());
     }
 }
